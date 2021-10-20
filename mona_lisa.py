@@ -3,9 +3,12 @@ import requests
 import shutil
 import os
 from typing import List, Dict, Any
+from furl import furl
 
 
 def example():
+    # url must be in form
+    # https://csus.mediasite.com/Mediasite/FileServer/f91cef6bec4e43d297b3859d0d54b19d29/Presentation/3b45770d114040cc85754e7b357e9a6b1d/slide_0001_122_768.jpg?playbackTicket=10a1ea5238724982a180516f545e93e1
     example_parts: List[Dict] = [
         {'dir': '', 'name': '', 'presentation': '', 'playbackTicket': ''},
         {'dir': '', 'name': '', 'presentation': '', 'playbackTicket': ''},
@@ -19,6 +22,35 @@ def make_dir(parentdir, dirname):
         os.mkdir(path)
     except:
         return
+
+
+def make_parts_v2(parts: List[Dict], dir: str, name: str) -> List[Dict]:
+
+    count = 0
+    p_offset: int = 96  # presentation/
+    p_offset2: int = 130  # id len
+
+    with open('urls.txt') as f:
+        lines = f.readlines()
+
+    for line in range(len(lines)):
+        count += 1
+
+        url = lines[line]
+        pres = url[p_offset: p_offset2]
+
+        f = furl(url)
+        ticket: str = f.args['playbackTicket']
+        ticket: str = ticket.strip()
+
+        temp: dict = {'dir': dir, 'name': name + str(count),
+                      'presentation': pres, 'playbackTicket': ticket}
+
+        parts.append(temp)
+        print(temp)
+
+    print(parts)
+    return parts
 
 
 def make_parts(parts: List[Dict], dir: str, name: str) -> List[Dict]:
@@ -68,7 +100,7 @@ def get_slides(parts: List[Dict]):
                 slide = 'slide_' + slide
 
                 image_url = (
-                    "https://csus.mediasite.com/Mediasite/FileServer/f91cef6bec4e43d297b3859d0d54b19d29/Presentation/%(presentation)s/%(slide)s_819_512.jpg?playbackTicket=%(playbackTicket)s"
+                    "https://csus.mediasite.com/Mediasite/FileServer/f91cef6bec4e43d297b3859d0d54b19d29/Presentation/%(presentation)s/%(slide)s.jpg?playbackTicket=%(playbackTicket)s"
                     % locals())
 
                 print(image_url)
@@ -80,7 +112,7 @@ def get_slides(parts: List[Dict]):
                 try:
                     r = requests.get(image_url, stream=True)
                     if r.status_code != 200:
-                        raise Exception('End of slides')
+                        raise Exception('End of section ' + part_name)
                     else:
                         r.raw.decode_content = True
                         with open('./' + dir_name + '/' + dir_name + seperator + part_name + seperator + slide_name, "wb") as f:
@@ -96,9 +128,9 @@ def main():
     parentdir = '.'
     dirname = 'Chapter6'
     filename = 'part'
-    make_dir(parentdir=parentdir, dirname=dirname)
-    parts = make_parts(parts=parts, dir=dirname, name=filename)
-    get_slides(parts)
+    # make_dir(parentdir=parentdir, dirname=dirname)
+    parts = make_parts_v2(parts=parts, dir=dirname, name=filename)
+    # get_slides(parts)
 
 
 if __name__ == "__main__":
