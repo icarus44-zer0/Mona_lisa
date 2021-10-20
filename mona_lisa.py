@@ -1,4 +1,3 @@
-import typing
 import requests
 import shutil
 import os
@@ -128,9 +127,9 @@ def main():
     parentdir = '.'
     dirname = 'Chapter6'
     filename = 'part'
-    # make_dir(parentdir=parentdir, dirname=dirname)
+    make_dir(parentdir=parentdir, dirname=dirname)
     parts = make_parts_v2(parts=parts, dir=dirname, name=filename)
-    # get_slides(parts)
+    get_slides(parts)
 
 
 if __name__ == "__main__":
