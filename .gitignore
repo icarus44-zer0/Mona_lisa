@@ -132,3 +132,4 @@ dmypy.json
 
 # Image Downloaded PATH
 Chapter*/**
+.vscode/settings.json
